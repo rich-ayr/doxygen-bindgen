@@ -1,11 +1,11 @@
 [package]
 name = "doxygen-bindgen"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2024"
 license = "MIT"
-authors = ["oberrich <oberrich.llvm@proton.me>"]
-repository = "https://github.com/oberrich/doxygen-bindgen"
-homepage = "https://github.com/oberrich/doxygen-bindgen"
+authors = ["rich-ayr <rich-ayr@img.ws>"]
+repository = "https://github.com/rich-ayr/doxygen-bindgen"
+homepage = "https://github.com/rich-ayr/doxygen-bindgen"
 description = "Converts Doxygen comments into Rustdoc markdown"
 
 [dependencies]
