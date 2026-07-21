@@ -17,7 +17,7 @@ struct ProcessComments;
 
 impl ParseCallbacks for ProcessComments {
     fn process_comment(&self, comment: &str) -> Option<String> {
-        match crate::doxygen::transform(comment) {
+        match doxygen_bindgen::transform(comment) {
             Ok(res) => Some(res),
             Err(err) => {
                 println!("cargo:warning=Problem processing doxygen comment: {comment}\n{err}");
