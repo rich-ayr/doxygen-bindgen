@@ -61,7 +61,8 @@ pub fn transform(str: &str) -> Result<String, Box<dyn Error>> {
                         if toks.next() != Some(']') {
                             return Err("Expected closing ']' inside attribute list".into());
                         }
-                        attributes = format!(" [{}] ", attributes);
+                        // Escape brackets so rustdoc doesn't read `[in]` as a link.
+                        attributes = format!(" \\[{}\\]", attributes);
                         skip_whitespace(&mut toks);
                         argument = take_word(&mut toks);
                     }
@@ -116,7 +117,7 @@ mod tests {
     #[test]
     fn with_attributes() {
         const S: &str = "Creates a new registry key or opens an existing one, and it associates the key with a transaction.\n\n@param[out] KeyHandle A pointer to a handle that receives the key handle.\n @param[in] DesiredAccess The access mask that specifies the desired access rights.\n@param[in] ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n@param[in] TitleIndex Reserved.\n@param[in, optional] Class A pointer to a UNICODE_STRING structure that specifies the class of the key.\n @param[in] CreateOptions The options to use when creating the key.\n@param[in] TransactionHandle A handle to the transaction.\n @param[out, optional] Disposition A pointer to a variable that receives the disposition value.\n@return NTSTATUS Successful or errant status.\n";
-        const S_: &str = "Creates a new registry key or opens an existing one, and it associates the key with a transaction.\n\n# Arguments\n\n* `KeyHandle` [out]  - A pointer to a handle that receives the key handle.\n* `DesiredAccess` [in]  - The access mask that specifies the desired access rights.\n* `ObjectAttributes` [in]  - A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n* `TitleIndex` [in]  - Reserved.\n* `Class` [in, optional]  - A pointer to a UNICODE_STRING structure that specifies the class of the key.\n* `CreateOptions` [in]  - The options to use when creating the key.\n* `TransactionHandle` [in]  - A handle to the transaction.\n* `Disposition` [out, optional]  - A pointer to a variable that receives the disposition value.\n\n# Returns\n\nNTSTATUS Successful or errant status.\n";
+        const S_: &str = "Creates a new registry key or opens an existing one, and it associates the key with a transaction.\n\n# Arguments\n\n* `KeyHandle` \\[out\\] - A pointer to a handle that receives the key handle.\n* `DesiredAccess` \\[in\\] - The access mask that specifies the desired access rights.\n* `ObjectAttributes` \\[in\\] - A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n* `TitleIndex` \\[in\\] - Reserved.\n* `Class` \\[in, optional\\] - A pointer to a UNICODE_STRING structure that specifies the class of the key.\n* `CreateOptions` \\[in\\] - The options to use when creating the key.\n* `TransactionHandle` \\[in\\] - A handle to the transaction.\n* `Disposition` \\[out, optional\\] - A pointer to a variable that receives the disposition value.\n\n# Returns\n\nNTSTATUS Successful or errant status.\n";
         assert_eq!(crate::transform(S).unwrap(), S_);
     }
 
@@ -124,6 +125,14 @@ mod tests {
     fn new_paragraph_after_html() {
         const S: &str =  "Set encoding parameters to default values:\n<ul>\n<li>Lossless</li>\n<li>1 tile\n</li>\n<li>etc...</li>\n</ul>\n@param parameters Compression parameters";
         const S_: &str = "Set encoding parameters to default values:\n<ul>\n<li>Lossless</li>\n<li>1 tile\n</li>\n<li>etc...</li>\n</ul>\n\n# Arguments\n\n* `parameters` - Compression parameters";
+        assert_eq!(crate::transform(S).unwrap(), S_);
+    }
+
+    // issue #4
+    #[test]
+    fn param_attributes_are_escaped() {
+        const S: &str = "@param[in] Foo The foo.";
+        const S_: &str = "# Arguments\n\n* `Foo` \\[in\\] - The foo.";
         assert_eq!(crate::transform(S).unwrap(), S_);
     }
 }
